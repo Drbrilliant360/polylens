@@ -1,8 +1,7 @@
 {
-  "rootDirectory": "polylens-ui",
-  "installCommand": "npm install && npm --prefix server install",
-  "buildCommand": "node scripts/vercel-build.mjs",
-  "outputDirectory": "dist",
+  "installCommand": "npm --prefix polylens-ui install && npm --prefix polylens-ui/server install",
+  "buildCommand": "cd polylens-ui && node scripts/vercel-build.mjs",
+  "outputDirectory": "polylens-ui/dist",
   "functions": {
     "api/index.ts": {
       "runtime": "@vercel/node@3",
