@@ -1,0 +1,117 @@
+import PDFDocument from 'pdfkit'
+import { prisma } from '../config/database'
+
+export const reportService = {
+  async generatePdf(assessmentId: string): Promise<Buffer> {
+    const assessment = await prisma.assessment.findUnique({
+      where: { id: assessmentId },
+      include: {
+        dimensions: true,
+        gaps: { orderBy: { severity: 'desc' } },
+        recommendations: true,
+        strengths: true,
+        priorityActions: { orderBy: { rank: 'asc' } },
+      },
+    })
+    if (!assessment) throw new Error('Assessment not found')
+
+    return new Promise((resolve, reject) => {
+      const doc = new PDFDocument({ margin: 50, size: 'A4' })
+      const chunks: Buffer[] = []
+
+      doc.on('data', (chunk: Buffer) => chunks.push(chunk))
+      doc.on('end', () => resolve(Buffer.concat(chunks)))
+      doc.on('error', reject)
+
+      const primary = '#1e293b'
+      const accent = '#4c6ef5'
+      const gray = '#64748b'
+
+      doc.fontSize(24).font('Helvetica-Bold').fillColor(primary).text('PolicyLens AI', { continued: false })
+      doc.fontSize(12).font('Helvetica').fillColor(accent).text('AI Readiness Assessment Report')
+      doc.moveDown(0.5)
+
+      doc.fontSize(10).fillColor(gray)
+      doc.text(`Country: ${assessment.country}`)
+      doc.text(`Document: ${assessment.documentName}`)
+      doc.text(`Assessment Date: ${assessment.assessmentDate.toISOString().split('T')[0]}`)
+      doc.text(`Framework: ITU AI Readiness Framework 2.0`)
+      doc.moveDown(1)
+
+      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#e2e8f0').stroke()
+      doc.moveDown(1)
+
+      doc.fontSize(18).font('Helvetica-Bold').fillColor(primary).text('Executive Summary')
+      doc.moveDown(0.5)
+      doc.fontSize(11).font('Helvetica').fillColor(primary)
+      doc.text(
+        `This report presents the AI Readiness Assessment for ${assessment.country} based on an analysis of "${assessment.documentName}". ` +
+        `The overall readiness score is ${assessment.overallScore}/100, placing the country at a "${assessment.readinessLevel}" level of readiness. ` +
+        `The assessment evaluates 7 dimensions of the ITU AI Readiness Framework 2.0.`
+      )
+      doc.moveDown(1)
+
+      doc.fontSize(16).font('Helvetica-Bold').fillColor(primary).text('Dimension Scores')
+      doc.moveDown(0.5)
+
+      const tableTop = doc.y
+      const colWidth = [180, 60, 80, 200]
+
+      doc.fontSize(10).font('Helvetica-Bold').fillColor(primary)
+      doc.text('Dimension', 50, tableTop, { width: colWidth[0] })
+      doc.text('Score', 50 + colWidth[0], tableTop, { width: colWidth[1], align: 'center' })
+      doc.text('Level', 50 + colWidth[0] + colWidth[1], tableTop, { width: colWidth[2], align: 'center' })
+      doc.text('Key Finding', 50 + colWidth[0] + colWidth[1] + colWidth[2], tableTop, { width: colWidth[3] })
+
+      doc.moveTo(50, doc.y + 5).lineTo(545, doc.y + 5).strokeColor('#e2e8f0').stroke()
+      doc.moveDown(0.5)
+
+      assessment.dimensions.forEach((dim, i) => {
+        const y = doc.y
+        doc.fontSize(9).font('Helvetica').fillColor(primary)
+        doc.text(dim.name, 50, y, { width: colWidth[0] })
+        doc.text(`${dim.score}`, 50 + colWidth[0], y, { width: colWidth[1], align: 'center' })
+        doc.text(dim.level, 50 + colWidth[0] + colWidth[1], y, { width: colWidth[2], align: 'center' })
+        doc.text(dim.keyFinding.substring(0, 80) + '...', 50 + colWidth[0] + colWidth[1] + colWidth[2], y, {
+          width: colWidth[3],
+          fontSize: 8,
+        })
+        doc.moveDown(1.5)
+      })
+
+      doc.moveDown(1)
+      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#e2e8f0').stroke()
+      doc.moveDown(1)
+
+      if (assessment.gaps.length > 0) {
+        doc.fontSize(16).font('Helvetica-Bold').fillColor(primary).text('Gap Register')
+        doc.moveDown(0.5)
+        assessment.gaps.slice(0, 10).forEach((gap, i) => {
+          const color = gap.severity === 'Critical' ? '#ef4444' : gap.severity === 'Moderate' ? '#f59e0b' : '#94a3b8'
+          doc.fontSize(10).font('Helvetica-Bold').fillColor(color).text(`${i + 1}. [${gap.severity}] ${gap.dimension}`)
+          doc.fontSize(9).font('Helvetica').fillColor(primary).text(`   ${gap.description}`, { indent: 10 })
+          doc.moveDown(0.3)
+        })
+      }
+
+      doc.moveDown(1)
+      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#e2e8f0').stroke()
+      doc.moveDown(1)
+
+      doc.fontSize(16).font('Helvetica-Bold').fillColor(primary).text('Priority Action Plan')
+      doc.moveDown(0.5)
+      assessment.priorityActions.forEach((pa, i) => {
+        doc.fontSize(10).font('Helvetica-Bold').fillColor(accent).text(`${i + 1}. ${pa.title}`)
+        doc.fontSize(9).font('Helvetica').fillColor(primary).text(`   ${pa.description}`, { indent: 10 })
+        doc.moveDown(0.5)
+      })
+
+      doc.moveDown(2)
+      doc.fontSize(8).font('Helvetica').fillColor(gray)
+      doc.text('Generated by PolicyLens AI | ITU AI Readiness Framework 2.0', { align: 'center' })
+      doc.text(`© ${new Date().getFullYear()} PolicyLens AI Platform`, { align: 'center' })
+
+      doc.end()
+    })
+  },
+}

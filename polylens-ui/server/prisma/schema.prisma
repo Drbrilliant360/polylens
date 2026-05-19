@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      String   @default("analyst")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assessments Assessment[]
+}
+
+model Assessment {
+  id              String   @id @default(uuid())
+  title           String
+  country         String
+  documentName    String
+  overallScore    Int      @default(0)
+  readinessLevel  String   @default("Nascent")
+  assessmentDate  DateTime @default(now())
+  previousScore   Int?
+  status          String   @default("draft")
+  metadata        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  dimensions    DimensionScore[]
+  gaps          Gap[]
+  recommendations Recommendation[]
+  documents     Document[]
+  strengths     Strength[]
+  priorityActions PriorityAction[]
+}
+
+model DimensionScore {
+  id          String @id @default(uuid())
+  name        String
+  score       Int    @default(0)
+  level       String @default("Nascent")
+  keyFinding  String
+
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+}
+
+model Gap {
+  id            String @id @default(uuid())
+  description   String
+  dimension     String
+  indicator     String
+  severity      String @default("Moderate")
+  recommendation String
+  rootCause     String?
+  consequence   String?
+  africanPrecedent String?
+
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+}
+
+model Recommendation {
+  id              String @id @default(uuid())
+  title           String
+  action          String
+  owner           String
+  resources       String
+  feasibility     Int    @default(3)
+  expectedOutcome String
+  risks           String
+  ituDimension    String
+  sdgLink         String
+  timeHorizon     String @default("short-term")
+
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+}
+
+model Document {
+  id          String   @id @default(uuid())
+  filename    String
+  originalName String
+  mimeType    String
+  size        Int
+  path        String
+  language    String   @default("en")
+  extractedText String?
+
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+}
+
+model Strength {
+  id          String @id @default(uuid())
+  description String
+
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+}
+
+model PriorityAction {
+  id          String @id @default(uuid())
+  title       String
+  description String
+  rank        Int
+
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+}
+
+model BenchmarkPair {
+  id              String @id @default(uuid())
+  primaryCountry  String
+  benchmarkCountry String
+  dimensionScores String
+  overallPrimary  Int
+  overallBenchmark Int
+  createdAt       DateTime @default(now())
+}
