@@ -1,6 +1,6 @@
 {
-  "installCommand": "npm --prefix polylens-ui install",
-  "buildCommand": "cd polylens-ui && npm run build",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "routes": [
     { "src": "/(.*)", "dest": "/index.html" }
