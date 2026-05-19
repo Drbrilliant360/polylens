@@ -3,6 +3,7 @@ import cors from 'cors'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import path from 'path'
+import dotenv from 'dotenv'
 import { authRouter } from './routes/auth'
 import { assessmentsRouter } from './routes/assessments'
 import { documentsRouter } from './routes/documents'
@@ -15,12 +16,23 @@ import { errorHandler } from './middleware/errorHandler'
 
 const app = express()
 
+if (!process.env.VERCEL) {
+  dotenv.config({ path: path.join(__dirname, '..', '.env') })
+}
+
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
-app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:4173'], credentials: true }))
+app.use(cors({
+  origin: process.env.VERCEL
+    ? process.env.CORS_ORIGIN?.split(',') || true
+    : ['http://localhost:5173', 'http://localhost:4173'],
+  credentials: true,
+}))
 app.use(morgan('dev'))
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ extended: true, limit: '50mb' }))
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')))
+if (!process.env.VERCEL) {
+  app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')))
+}
 
 app.use('/api/auth', authRouter)
 app.use('/api/assessments', assessmentsRouter)
