@@ -22,8 +22,8 @@ if (!process.env.VERCEL) {
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
 app.use(cors({
-  origin: process.env.VERCEL
-    ? process.env.CORS_ORIGIN?.split(',') || true
+  origin: process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',')
     : ['http://localhost:5173', 'http://localhost:4173'],
   credentials: true,
 }))
