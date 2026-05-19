@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAssessment } from '../lib/useAssessment'
-import { defaultAssessment } from '../lib/data'
+import { defaultAssessment, recommendations as defaultRecs } from '../lib/data'
 import { api } from '../lib/api'
 import { Badge } from '../components/ui/Badge'
 import { cn } from '../lib/cn'
@@ -34,7 +34,7 @@ export default function Recommendations() {
     if (!loading) load()
   }, [loading, rawId])
 
-  const recommendations = liveRecs || defaultAssessment.recommendations || []
+  const recommendations = liveRecs || defaultRecs || []
 
   const categorized = {
     immediate: recommendations.filter((r: any) => (r.timeHorizon || r.id?.startsWith('R-IM') ? 'immediate' : '') === 'immediate' || r.id?.startsWith('R-IM')),

@@ -9,7 +9,7 @@ export interface DimensionScore {
 }
 
 export interface Gap {
-  id: number
+  id: string
   description: string
   dimension: string
   indicator: string

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
-import { api, setAuthToken, getToken, isAuthenticated } from './api'
+import { api, setAuthToken, isAuthenticated } from './api'
 
 interface User {
   id: string
