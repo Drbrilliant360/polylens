@@ -5,7 +5,7 @@ import { Card } from '../components/ui/Card'
 import { inputClass } from '../lib/inputStyles'
 
 export default function Login() {
-  const { login, register } = useAuth()
+  const { login, register, demoLogin } = useAuth()
   const [isRegister, setIsRegister] = useState(false)
   const [email, setEmail] = useState('admin@polylens.ai')
   const [name, setName] = useState('')
@@ -108,7 +108,17 @@ export default function Login() {
           </div>
         </Card>
 
-        <p className="text-xs text-slate-400 text-center mt-6">
+        <div className="mt-4 text-center">
+          <button
+            type="button"
+            onClick={demoLogin}
+            className="text-xs text-policy-600 hover:text-policy-800 font-medium transition-colors underline-offset-2 hover:underline"
+          >
+            Continue as Demo (offline mode)
+          </button>
+        </div>
+
+        <p className="text-xs text-slate-400 text-center mt-4">
           Demo credentials: admin@polylens.ai / password123
         </p>
       </div>

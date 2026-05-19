@@ -14,6 +14,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   register: (email: string, name: string, password: string) => Promise<void>
   logout: () => void
+  demoLogin: () => void
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -50,8 +51,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
+  const demoLogin = useCallback(() => {
+    setUser({ id: 'demo', email: 'demo@polylens.ai', name: 'Demo User', role: 'analyst' })
+  }, [])
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, demoLogin }}>
       {children}
     </AuthContext.Provider>
   )
