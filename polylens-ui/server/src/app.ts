@@ -43,6 +43,13 @@ app.use('/api/trends', trendsRouter)
 app.use('/api/reports', reportsRouter)
 app.use('/api/ai', aiRouter)
 
+app.get('/', (_req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'PolicyLens API is running',
+  })
+})
+
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
