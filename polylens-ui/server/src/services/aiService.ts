@@ -120,7 +120,7 @@ function aiErrorMessage(error: unknown): string {
 }
 
 async function createCompletion(
-  params: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming,
+  params: Omit<OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming, 'model'>,
   model: string = MODEL
 ) {
   try {
