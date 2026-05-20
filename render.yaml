@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: polylens-server
+    env: node
+    rootDir: polylens-ui/server
+    buildCommand: npm install && node scripts/prod-build.js
+    startCommand: node scripts/prod-start.js
